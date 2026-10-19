@@ -189,16 +189,16 @@ export default function RoomView() {
 
   const handleLogout = useCallback(() => {
     setConfirm({
-      title: 'خروج از حالت ادمین',
-      message: 'از این پس این دستگاه فقط بیننده است و نمی‌تواند امتیاز ثبت کند. برای بازگشت، دوباره رمز ادمین را وارد کنید.',
+      title: 'خروج کامل',
+      message: 'از حالت ادمین خارج می‌شوید و کامل از اتاق بیرون می‌روید. برای بازگشت دوباره، وارد اتاق شوید و رمز ادمین را دوباره وارد کنید.',
       confirmLabel: 'خروج',
       onConfirm: () => {
         setConfirm(null)
         admin.logout()
-        showToast('از حالت ادمین خارج شدید')
+        navigate('/')
       },
     })
-  }, [admin, showToast])
+  }, [admin, navigate])
 
   // ---------- حالت‌های بارگذاری و خطا ----------
   if (loading) {
