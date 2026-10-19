@@ -35,10 +35,10 @@ export async function verifyAdmin(code, password) {
   return Boolean(data)
 }
 
-/** ثبت یک رویداد امتیاز (نیازمند رمز ادمین) */
-export async function addScoreEvent(code, password, sessionId, playerId, type) {
+/** ثبت یک رویداد امتیاز (نیازمند رمز ادمین) — qty می‌تواند +۱ یا −۱ باشد */
+export async function addScoreEvent(code, password, sessionId, playerId, type, qty = 1) {
   return rpc('add_score_event', {
-    p_code: code, p_password: password, p_session: sessionId, p_player: playerId, p_type: type,
+    p_code: code, p_password: password, p_session: sessionId, p_player: playerId, p_type: type, p_qty: qty,
   })
 }
 

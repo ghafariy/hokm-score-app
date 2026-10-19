@@ -80,7 +80,7 @@ export default function RoomView() {
 
   // ---------- عملیات امتیازدهی ----------
   const handleScore = useCallback(
-    (playerId, type) => {
+    (playerId, type, qty = 1) => {
       if (!admin.isAdmin) {
         setModal('password')
         return
@@ -89,7 +89,7 @@ export default function RoomView() {
         showToast('ابتدا یک دور جدید بسازید', 'error')
         return
       }
-      guarded(() => addScoreEvent(code, admin.password, activeSession.id, playerId, type))
+      guarded(() => addScoreEvent(code, admin.password, activeSession.id, playerId, type, qty))
     },
     [admin, activeSession, code, guarded, showToast],
   )

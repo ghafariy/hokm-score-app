@@ -46,6 +46,7 @@ create table if not exists public.score_events (
   event_type text not null check (event_type in (
     'win','loss','hakem_beat','hakem_beaten','mars_done','mars_received'
   )),
+  qty integer not null default 1,
   created_at timestamptz not null default now()
 );
 create index if not exists events_lookup_idx
@@ -143,9 +144,10 @@ as $$
   );
 $$;
 
--- ثبت یک رویداد امتیاز
+-- ثبت یک رویداد امتیاز (p_qty می‌تواند +۱ یا −۱ باشد)
 create or replace function public.add_score_event(
-  p_code text, p_password text, p_session uuid, p_player uuid, p_type text
+  p_code text, p_password text, p_session uuid, p_player uuid,
+  p_type text, p_qty integer default 1
 )
 returns public.score_events
 language plpgsql
@@ -154,6 +156,7 @@ set search_path to public, extensions
 as $$
 declare
   v_code text := upper(trim(coalesce(p_code, '')));
+  v_current integer;
   v_event public.score_events;
 begin
   if not public.verify_admin(v_code, p_password) then
@@ -162,6 +165,9 @@ begin
   if p_type not in ('win','loss','hakem_beat','hakem_beaten','mars_done','mars_received') then
     raise exception 'نوع امتیاز نامعتبر است';
   end if;
+  if p_qty is null or p_qty = 0 or abs(p_qty) > 50 then
+    raise exception 'مقدار امتیاز نامعتبر است';
+  end if;
   if not exists (
     select 1 from public.game_sessions
     where id = p_session and room_code = v_code and is_active
@@ -169,8 +175,19 @@ begin
     raise exception 'این دور بسته شده است';
   end if;
 
-  insert into public.score_events (room_code, session_id, player_id, event_type)
-  values (v_code, p_session, p_player, p_type)
+  -- جلوگیری از منفی شدن شمارنده
+  if p_qty < 0 then
+    select coalesce(sum(qty), 0) into v_current
+    from public.score_events
+    where session_id = p_session and player_id = p_player and event_type = p_type;
+
+    if v_current + p_qty < 0 then
+      raise exception 'این مورد قبلاً صفر است و کمتر نمی‌شود';
+    end if;
+  end if;
+
+  insert into public.score_events (room_code, session_id, player_id, event_type, qty)
+  values (v_code, p_session, p_player, p_type, p_qty)
   returning * into v_event;
 
   return v_event;
@@ -360,7 +377,7 @@ grant usage on schema public to anon, authenticated;
 grant execute on function public.get_room(text) to anon, authenticated;
 grant execute on function public.create_room(text, text, text) to anon, authenticated;
 grant execute on function public.verify_admin(text, text) to anon, authenticated;
-grant execute on function public.add_score_event(text, text, uuid, uuid, text) to anon, authenticated;
+grant execute on function public.add_score_event(text, text, uuid, uuid, text, integer) to anon, authenticated;
 grant execute on function public.undo_last_event(text, text, uuid) to anon, authenticated;
 grant execute on function public.add_player(text, text, text) to anon, authenticated;
 grant execute on function public.remove_player(text, text, uuid) to anon, authenticated;
