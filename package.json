@@ -1,0 +1,27 @@
+{
+  "name": "hokm-scoreboard",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "تابلوی امتیازات زنده بازی حکم برای جمع‌های خانوادگی (PWA)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "icons": "powershell -ExecutionPolicy Bypass -File scripts/generate-icons.ps1"
+  },
+  "dependencies": {
+    "@fontsource-variable/vazirmatn": "^5.3.0",
+    "@supabase/supabase-js": "^2.118.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.2",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.4",
+    "vite-plugin-pwa": "^2.0.0"
+  }
+}
