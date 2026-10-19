@@ -23,8 +23,9 @@ export default function HomeScreen() {
       <CreateRoomCard onCreated={(code) => navigate(`/room/${code}`)} />
       <JoinRoomCard onJoined={(code) => navigate(`/room/${code}`)} />
 
-      <footer className="text-xs text-slate-400 text-center pb-4">
-        برای نصب روی گوشی، این صفحه را به صفحه اصلی (Add to Home Screen) اضافه کنید
+      <footer className="text-center pb-4 space-y-1.5">
+        <p className="text-teal-600 font-bold text-sm">طراحی شده توسط مهندس محمد فتحی</p>
+        <p className="text-xs text-slate-400">برای نصب روی گوشی، این صفحه را به صفحه اصلی (Add to Home Screen) اضافه کنید</p>
       </footer>
     </div>
   )
