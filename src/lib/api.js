@@ -35,10 +35,10 @@ export async function verifyAdmin(code, password) {
   return Boolean(data)
 }
 
-/** ثبت یک رویداد امتیاز (نیازمند رمز ادمین) */
-export async function addScoreEvent(code, password, sessionId, playerId, type) {
+/** ثبت یک رویداد امتیاز (نیازمند رمز ادمین) — qty می‌تواند +۱ یا −۱ باشد */
+export async function addScoreEvent(code, password, sessionId, playerId, type, qty = 1) {
   return rpc('add_score_event', {
-    p_code: code, p_password: password, p_session: sessionId, p_player: playerId, p_type: type,
+    p_code: code, p_password: password, p_session: sessionId, p_player: playerId, p_type: type, p_qty: qty,
   })
 }
 
@@ -70,6 +70,11 @@ export async function clearSession(code, password, sessionId) {
 /** حذف کامل یک دور از آرشیو */
 export async function deleteSession(code, password, sessionId) {
   return rpc('delete_session', { p_code: code, p_password: password, p_session: sessionId })
+}
+
+/** تغییر رمز ادمین (با تایید رمز فعلی) */
+export async function changeAdminPassword(code, currentPassword, newPassword) {
+  return rpc('change_admin_password', { p_code: code, p_password: currentPassword, p_new_password: newPassword })
 }
 
 /** دریافت همه داده‌های یک اتاق در یک فراخوانی */

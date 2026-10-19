@@ -18,11 +18,11 @@ export function emptyCounts() {
   return { win: 0, loss: 0, hakem_beat: 0, hakem_beaten: 0, mars_done: 0, mars_received: 0 }
 }
 
-/** شمارش تعداد هر نوع رویداد از روی لیست رویدادها */
+/** شمارش مقدار هر نوع رویداد از روی لیست رویدادها (جمع qty: +۱ یا −۱) */
 export function tally(events) {
   const counts = emptyCounts()
   for (const e of events) {
-    if (counts[e.event_type] !== undefined) counts[e.event_type] += 1
+    if (counts[e.event_type] !== undefined) counts[e.event_type] += e.qty ?? 1
   }
   return counts
 }
