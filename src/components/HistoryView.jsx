@@ -29,19 +29,22 @@ export default function HistoryView({ players, sessions, events, activeSession, 
           <p className="text-center text-slate-400 py-8 font-bold">هنوز رویدادی ثبت نشده</p>
         ) : (
           <ul className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
-            {activeEvents.map((e) => (
-              <li key={e.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-                <span className="text-slate-400 w-12 shrink-0">{timeOf(e.created_at)}</span>
-                <span
-                  className={`font-bold w-5 text-center ${EVENT_META[e.event_type]?.sign > 0 ? 'text-emerald-600' : 'text-rose-600'}`}
-                >
-                  {EVENT_META[e.event_type]?.sign > 0 ? '+' : '−'}
-                </span>
-                <span className="text-slate-700 font-bold flex-1">
-                  {EVENT_META[e.event_type]?.label} برای {playerName(e.player_id)}
-                </span>
-              </li>
-            ))}
+            {activeEvents.map((e) => {
+              const qty = e.qty ?? 1
+              return (
+                <li key={e.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
+                  <span className="text-slate-400 w-12 shrink-0">{timeOf(e.created_at)}</span>
+                  <span
+                    className={`font-black w-5 text-center shrink-0 ${qty > 0 ? 'text-emerald-600' : 'text-rose-600'}`}
+                  >
+                    {qty > 0 ? '+' : '−'}
+                  </span>
+                  <span className="text-slate-700 font-bold flex-1">
+                    {EVENT_META[e.event_type]?.label} برای {playerName(e.player_id)}
+                  </span>
+                </li>
+              )
+            })}
           </ul>
         )}
       </div>

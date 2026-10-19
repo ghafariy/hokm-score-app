@@ -5,6 +5,7 @@ import { useAdmin } from '../hooks/useAdmin'
 import {
   addPlayer,
   addScoreEvent,
+  changeAdminPassword,
   clearSession,
   createSession,
   deleteSession,
@@ -35,7 +36,7 @@ export default function RoomView() {
 
   const [tab, setTab] = useState('score')
   const [toast, setToast] = useState(null)
-  const [modal, setModal] = useState(null) // نام مودال باز: password | players | newSession
+  const [modal, setModal] = useState(null) // نام مودال باز: password | players | newSession | changePassword
   const [confirm, setConfirm] = useState(null) // { title, message, danger, onConfirm }
 
   // افکت نمایش توست با مدت زمان حذف خودکار
@@ -79,7 +80,7 @@ export default function RoomView() {
 
   // ---------- عملیات امتیازدهی ----------
   const handleScore = useCallback(
-    (playerId, type) => {
+    (playerId, type, qty = 1) => {
       if (!admin.isAdmin) {
         setModal('password')
         return
@@ -88,7 +89,7 @@ export default function RoomView() {
         showToast('ابتدا یک دور جدید بسازید', 'error')
         return
       }
-      guarded(() => addScoreEvent(code, admin.password, activeSession.id, playerId, type))
+      guarded(() => addScoreEvent(code, admin.password, activeSession.id, playerId, type, qty))
     },
     [admin, activeSession, code, guarded, showToast],
   )
@@ -173,6 +174,32 @@ export default function RoomView() {
     [admin, code, guarded],
   )
 
+  const handleChangePassword = useCallback(
+    async (currentPw, newPw) => {
+      const ok = await guarded(() => changeAdminPassword(code, currentPw, newPw))
+      if (ok) {
+        // رمز جدید روی همین دستگاه ذخیره می‌شود
+        admin.persistPassword(newPw)
+        setModal(null)
+        showToast('رمز ادمین با موفقیت عوض شد ✅')
+      }
+    },
+    [admin, code, guarded, showToast],
+  )
+
+  const handleLogout = useCallback(() => {
+    setConfirm({
+      title: 'خروج از حالت ادمین',
+      message: 'از این پس این دستگاه فقط بیننده است و نمی‌تواند امتیاز ثبت کند. برای بازگشت، دوباره رمز ادمین را وارد کنید.',
+      confirmLabel: 'خروج',
+      onConfirm: () => {
+        setConfirm(null)
+        admin.logout()
+        showToast('از حالت ادمین خارج شدید')
+      },
+    })
+  }, [admin, showToast])
+
   // ---------- حالت‌های بارگذاری و خطا ----------
   if (loading) {
     return (
@@ -240,7 +267,13 @@ export default function RoomView() {
 
           <div className="flex items-center gap-2 shrink-0">
             {admin.isAdmin ? (
-              <span className="text-[11px] font-black bg-teal-600 text-white rounded-full px-3 py-1.5">ادمین</span>
+              <button
+                onClick={handleLogout}
+                title="تپ کنید برای خروج از حالت ادمین"
+                className="text-[11px] font-black bg-teal-600 text-white rounded-full px-3 py-1.5 active:bg-teal-700"
+              >
+                ادمین ✕
+              </button>
             ) : (
               <button
                 onClick={() => setModal('password')}
@@ -281,6 +314,7 @@ export default function RoomView() {
             <AdminChip label="↶ بازگشت آخرین" onClick={handleUndo} tone="amber" />
             <AdminChip label="＋ افزودن بازیکن" onClick={() => setModal('players')} tone="slate" />
             <AdminChip label="↻ دور جدید" onClick={() => setModal('newSession')} tone="slate" />
+            <AdminChip label="🔑 تغییر رمز" onClick={() => setModal('changePassword')} tone="slate" />
           </div>
         )}
       </header>
@@ -347,6 +381,13 @@ export default function RoomView() {
         onClose={() => setModal(null)}
         onSubmit={handleNewSession}
         activeSession={activeSession}
+      />
+
+      <ChangePasswordModal
+        open={modal === 'changePassword'}
+        onClose={() => setModal(null)}
+        onSubmit={handleChangePassword}
+        checking={admin.checking}
       />
 
       <ConfirmModal
@@ -508,6 +549,78 @@ function NewSessionModal({ open, onClose, onSubmit, activeSession }) {
           className="w-full h-12 rounded-2xl bg-teal-600 text-white font-black active:bg-teal-700"
         >
           شروع دور جدید
+        </button>
+      </form>
+    </Modal>
+  )
+}
+
+/** مودال تغییر رمز ادمین */
+function ChangePasswordModal({ open, onClose, onSubmit, checking }) {
+  const [current, setCurrent] = useState('')
+  const [next, setNext] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (open) {
+      setCurrent('')
+      setNext('')
+      setConfirm('')
+      setError(null)
+    }
+  }, [open])
+
+  const submit = (e) => {
+    e.preventDefault()
+    setError(null)
+    if (next.length < 4) return setError('رمز جدید باید حداقل ۴ کاراکتر باشد')
+    if (next !== confirm) return setError('رمز جدید و تکرار آن یکسان نیستند')
+    onSubmit(current, next)
+  }
+
+  const fieldCls =
+    'w-full h-12 rounded-2xl bg-slate-50 ring-1 ring-slate-200 px-4 text-center font-bold focus:outline-none focus:ring-2 focus:ring-teal-500'
+
+  return (
+    <Modal open={open} title="تغییر رمز ادمین" onClose={onClose}>
+      <p className="text-slate-500 text-sm leading-7 mb-4">
+        رمز فعلی را وارد کنید و یک رمز جدید تعیین کنید. همه ادمین‌های اتاق باید رمز جدید را روی گوشی خود دوباره وارد کنند.
+      </p>
+      <form onSubmit={submit} className="space-y-3">
+        <input
+          type="password"
+          value={current}
+          onChange={(e) => setCurrent(e.target.value)}
+          placeholder="رمز فعلی"
+          autoComplete="current-password"
+          className={fieldCls}
+        />
+        <input
+          type="password"
+          value={next}
+          onChange={(e) => setNext(e.target.value)}
+          placeholder="رمز جدید (حداقل ۴ کاراکتر)"
+          autoComplete="new-password"
+          className={fieldCls}
+        />
+        <input
+          type="password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          placeholder="تکرار رمز جدید"
+          autoComplete="new-password"
+          className={fieldCls}
+        />
+
+        {error && <p className="text-rose-600 text-sm font-bold text-center">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={checking || !current || !next || !confirm}
+          className="w-full h-12 rounded-2xl bg-teal-600 text-white font-black active:bg-teal-700 disabled:opacity-50"
+        >
+          {checking ? 'در حال بررسی…' : 'تغییر رمز'}
         </button>
       </form>
     </Modal>

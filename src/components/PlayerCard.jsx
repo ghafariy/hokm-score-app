@@ -65,13 +65,13 @@ export default function PlayerCard({ player, counts, total, isAdmin, onScore, on
   )
 }
 
-/** یک دکمه امتیاز (سبز برای + و قرمز برای −) با نمایش تعداد فعلی */
+/** یک شمارنده با دکمه ± (سبز برای موارد مثبت و قرمز برای منفیِ جمع کل) */
 function ScoreButton({ type, count, isAdmin, onScore }) {
   const meta = EVENT_META[type]
   const positive = meta.sign > 0
   const style = positive
-    ? 'bg-emerald-50 text-emerald-700 ring-emerald-200 active:bg-emerald-600 active:text-white'
-    : 'bg-rose-50 text-rose-700 ring-rose-200 active:bg-rose-600 active:text-white'
+    ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+    : 'bg-rose-50 text-rose-700 ring-rose-200'
 
   if (!isAdmin) {
     // حالت بیننده: بدون تعامل، فقط نمایش تعداد
@@ -83,15 +83,33 @@ function ScoreButton({ type, count, isAdmin, onScore }) {
     )
   }
 
+  const canMinus = count > 0
+
   return (
-    <button
-      type="button"
-      onClick={() => onScore(type)}
-      className={`flex-1 h-12 rounded-2xl ring-1 flex items-center justify-center gap-1.5 font-bold text-sm transition-transform active:scale-95 ${style}`}
-    >
-      <span className="text-base leading-none">{positive ? '+' : '−'}</span>
-      <span>{meta.label}</span>
-      <span className="text-xs bg-white/60 rounded-full px-1.5 py-0.5">{toFa(count)}</span>
-    </button>
+    <div className={`flex-1 h-12 rounded-2xl ring-1 flex items-stretch overflow-hidden ${style}`}>
+      <button
+        type="button"
+        onClick={() => onScore(type, -1)}
+        disabled={!canMinus}
+        title="کم کردن"
+        className={`w-8 shrink-0 grid place-items-center text-lg font-black transition-colors ${
+          canMinus ? 'active:bg-slate-800 active:text-white' : 'opacity-30'
+        }`}
+      >
+        −
+      </button>
+      <div className="flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 px-1">
+        <span className="text-[11px] font-bold leading-none truncate max-w-full">{meta.label}</span>
+        <span className="text-xs bg-white/70 rounded-full px-1.5 py-0.5 leading-none">{toFa(count)}</span>
+      </div>
+      <button
+        type="button"
+        onClick={() => onScore(type, 1)}
+        title="زیاد کردن"
+        className="w-8 shrink-0 grid place-items-center text-lg font-black transition-colors active:bg-slate-800 active:text-white"
+      >
+        +
+      </button>
+    </div>
   )
 }
