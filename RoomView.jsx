@@ -187,6 +187,19 @@ export default function RoomView() {
     [admin, code, guarded, showToast],
   )
 
+  const handleLogout = useCallback(() => {
+    setConfirm({
+      title: 'خروج از حالت ادمین',
+      message: 'از این پس این دستگاه فقط بیننده است و نمی‌تواند امتیاز ثبت کند. برای بازگشت، دوباره رمز ادمین را وارد کنید.',
+      confirmLabel: 'خروج',
+      onConfirm: () => {
+        setConfirm(null)
+        admin.logout()
+        showToast('از حالت ادمین خارج شدید')
+      },
+    })
+  }, [admin, showToast])
+
   // ---------- حالت‌های بارگذاری و خطا ----------
   if (loading) {
     return (
@@ -254,7 +267,13 @@ export default function RoomView() {
 
           <div className="flex items-center gap-2 shrink-0">
             {admin.isAdmin ? (
-              <span className="text-[11px] font-black bg-teal-600 text-white rounded-full px-3 py-1.5">ادمین</span>
+              <button
+                onClick={handleLogout}
+                title="تپ کنید برای خروج از حالت ادمین"
+                className="text-[11px] font-black bg-teal-600 text-white rounded-full px-3 py-1.5 active:bg-teal-700"
+              >
+                ادمین ✕
+              </button>
             ) : (
               <button
                 onClick={() => setModal('password')}

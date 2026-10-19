@@ -42,6 +42,12 @@ export function useAdmin(code) {
     setPassword(null)
   }, [code])
 
+  /** خروج داوطلبانه از حالت ادمین (برای پیش‌نمایش حالت مهمان) */
+  const logout = useCallback(() => {
+    localStorage.removeItem(storageKey(code))
+    setPassword(null)
+  }, [code])
+
   /** ذخیره رمز جدید پس از تغییر موفق */
   const persistPassword = useCallback(
     (pw) => {
@@ -56,5 +62,5 @@ export function useAdmin(code) {
     [code],
   )
 
-  return { isAdmin, password, login, invalidate, persistPassword, checking }
+  return { isAdmin, password, login, invalidate, logout, persistPassword, checking }
 }
