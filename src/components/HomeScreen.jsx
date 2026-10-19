@@ -23,8 +23,9 @@ export default function HomeScreen() {
       <CreateRoomCard onCreated={(code) => navigate(`/room/${code}`)} />
       <JoinRoomCard onJoined={(code) => navigate(`/room/${code}`)} />
 
-      <footer className="text-xs text-slate-400 text-center pb-4">
-        برای نصب روی گوشی، این صفحه را به صفحه اصلی (Add to Home Screen) اضافه کنید
+      <footer className="text-center pb-4 space-y-1.5">
+        <p className="text-teal-600 font-bold text-sm">طراحی شده توسط مهندس محمد فتحی</p>
+        <p className="text-xs text-slate-400">برای نصب روی گوشی، این صفحه را به صفحه اصلی (Add to Home Screen) اضافه کنید</p>
       </footer>
     </div>
   )
@@ -75,7 +76,7 @@ function CreateRoomCard({ onCreated }) {
       onSubmit={submit}
       className="w-full max-w-sm bg-white rounded-3xl shadow-lg ring-1 ring-black/5 p-5 space-y-3 animate-pop"
     >
-      <h2 className="font-black text-slate-800 text-lg">ساخت اتاق جدید</h2>
+      <h2 className="font-black text-slate-800 text-lg">ساخت اتاق جدید بازی</h2>
       <p className="text-xs text-slate-500 -mt-2">شما ادمین (ثبت‌کننده امتیاز) می‌شوید</p>
 
       <input
@@ -155,7 +156,7 @@ function JoinRoomCard({ onJoined }) {
       onSubmit={submit}
       className="w-full max-w-sm bg-white rounded-3xl shadow-lg ring-1 ring-black/5 p-5 space-y-3 animate-pop"
     >
-      <h2 className="font-black text-slate-800 text-lg">ورود به اتاق</h2>
+      <h2 className="font-black text-slate-800 text-lg">ورود به اتاق بازی</h2>
       <p className="text-xs text-slate-500 -mt-2">با کد اتاق، جدول را زنده تماشا کنید</p>
 
       <input
