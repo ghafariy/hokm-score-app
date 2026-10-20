@@ -28,6 +28,17 @@ export async function createRoom(code, name, password) {
   return rpc('create_room', { p_code: code, p_name: name, p_password: password })
 }
 
+/** آمار سراسری اپلیکیشن (تعداد کل اتاق‌ها و بازیکن‌ها) — برای صفحه اصلی */
+export async function getGlobalStats() {
+  const { data, error } = await supabase.rpc('get_global_stats')
+  throwIf(error)
+  const row = data?.[0]
+  return {
+    room_count: Number(row?.room_count ?? 0),
+    player_count: Number(row?.player_count ?? 0),
+  }
+}
+
 /** بررسی رمز ادمین (true/false) */
 export async function verifyAdmin(code, password) {
   const { data, error } = await supabase.rpc('verify_admin', { p_code: code, p_password: password })
