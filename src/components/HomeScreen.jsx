@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createRoom, getRoom } from '../lib/api'
-import { normalizeCode, randomCode } from '../lib/utils'
+import { createRoom, getGlobalStats, getRoom } from '../lib/api'
+import { normalizeCode, randomCode, toFa } from '../lib/utils'
 
 const inputCls =
   'w-full h-12 rounded-2xl bg-slate-50 ring-1 ring-slate-200 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500 text-center font-bold tracking-wider'
@@ -20,6 +20,8 @@ export default function HomeScreen() {
         <p className="text-slate-500 mt-1">دیگه لازم نیست روی کاغذ بنویسید — همه از هر جا می‌بینند</p>
       </header>
 
+      <GlobalStats />
+
       <CreateRoomCard onCreated={(code) => navigate(`/room/${code}`)} />
       <JoinRoomCard onJoined={(code) => navigate(`/room/${code}`)} />
 
@@ -27,6 +29,55 @@ export default function HomeScreen() {
         <p className="text-teal-600 font-bold text-sm">طراحی شده توسط مهندس محمد فتحی</p>
         <p className="text-xs text-slate-400">برای نصب روی گوشی، این صفحه را به صفحه اصلی (Add to Home Screen) اضافه کنید</p>
       </footer>
+    </div>
+  )
+}
+
+/**
+ * نوار آمار سراسری اپلیکیشن — فقط در صفحه اصلی و قبل از ورود به اتاق
+ * تعداد کل اتاق‌های ساخته‌شده و کل بازیکن‌های ثبت‌شده در همه اتاق‌ها
+ */
+function GlobalStats() {
+  const [stats, setStats] = useState(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    getGlobalStats()
+      .then((s) => {
+        if (alive) setStats(s)
+      })
+      .catch(() => {
+        // مثلاً اگر مایگریشن ۰۰۴ هنوز اجرا نشده باشد یا اینترنت قطع باشد:
+        // کارت آمار را کلاً پنهان می‌کنیم تا صفحه خراب یا گیرکرده به نظر نرسد.
+        if (alive) setFailed(true)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  // اگر داده نرسیده (خطا/ناموجود) هیچ چیزی نمایش نده
+  if (failed) return null
+  const loading = !stats
+
+  return (
+    <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg ring-1 ring-black/5 px-4 py-3.5 animate-pop">
+      <p className="text-[11px] font-black text-slate-400 text-center mb-2">📊 آمار کلی اپلیکیشن</p>
+      <div className="grid grid-cols-2 gap-2 text-center">
+        <div className="rounded-2xl bg-teal-50 ring-1 ring-teal-100 py-2.5">
+          <p className="text-2xl font-black text-teal-700 leading-6">
+            {loading ? '—' : toFa(stats.room_count)}
+          </p>
+          <p className="text-[11px] font-bold text-teal-600/80 mt-1">اتاق ساخته‌شده</p>
+        </div>
+        <div className="rounded-2xl bg-slate-100 ring-1 ring-slate-200 py-2.5">
+          <p className="text-2xl font-black text-slate-700 leading-6">
+            {loading ? '—' : toFa(stats.player_count)}
+          </p>
+          <p className="text-[11px] font-bold text-slate-500 mt-1">بازیکن ثبت‌شده</p>
+        </div>
+      </div>
     </div>
   )
 }
